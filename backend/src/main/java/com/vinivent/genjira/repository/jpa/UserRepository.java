@@ -1,4 +1,4 @@
-package com.vinivent.genjira.repository;
+package com.vinivent.genjira.repository.jpa;
 
 import com.vinivent.genjira.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
