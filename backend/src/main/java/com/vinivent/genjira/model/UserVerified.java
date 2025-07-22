@@ -1,10 +1,12 @@
 package com.vinivent.genjira.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+
+import java.util.Date;
 import java.util.UUID;
 
 @Entity
@@ -24,22 +26,28 @@ public class UserVerified {
     @Column(nullable = false, unique = true)
     private String verificationToken;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Sao_Paulo")
+    private Date createdAt;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private LocalDateTime expiresAt;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Sao_Paulo")
+    private Date expiresAt;
 
-    private LocalDateTime verifiedAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Sao_Paulo")
+    private Date verifiedAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        expiresAt = LocalDateTime.now().plusHours(24); // Token expira em 24 horas
+        createdAt = new Date();
+        expiresAt = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000); // 24h
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiresAt);
+        return new Date().after(expiresAt);
     }
 
     public boolean isVerified() {
