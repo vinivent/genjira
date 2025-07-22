@@ -35,6 +35,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String email;
 
+    private String avatar;
+
     @Column(nullable = false)
     @Size(min = 6, message = "A senha deve ter pelo menos 6 caracteres.")
     private String password;

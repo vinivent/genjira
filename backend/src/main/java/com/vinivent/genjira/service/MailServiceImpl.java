@@ -1,5 +1,6 @@
 package com.vinivent.genjira.service;
 
+import com.vinivent.genjira.service.interfaces.IMailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -15,9 +16,9 @@ import org.thymeleaf.context.Context;
 import java.util.Map;
 
 @Service
-public class MailService {
+public class MailServiceImpl implements IMailService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MailService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MailServiceImpl.class);
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
@@ -25,17 +26,17 @@ public class MailService {
     @Value("${app.mail.sender.email}")
     private String senderEmail;
 
-    public MailService(JavaMailSender mailSender, TemplateEngine templateEngine) {
+    public MailServiceImpl(JavaMailSender mailSender, TemplateEngine templateEngine) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
     }
 
+    @Override
     public void sendEmail(String recipientEmail, String subject, String templateName,
                           Map<String, Object> variables) {
         try {
             String htmlContent = renderTemplate(templateName, variables);
             sendMimeMessage(recipientEmail, subject, htmlContent);
-
             logger.info("Email sent to {} with subject '{}'", recipientEmail, subject);
         } catch (MailException | MessagingException e) {
             logger.error("Failed to send email to {}: {}", recipientEmail, e.getMessage());
@@ -62,6 +63,7 @@ public class MailService {
         mailSender.send(message);
     }
 
+    @Override
     public void sendAccountVerificationEmail(String email, String verificationUrl, String username) {
         Map<String, Object> variables = Map.of(
                 "username", username,
@@ -71,6 +73,7 @@ public class MailService {
         sendEmail(email, "Verifique sua conta - Genjira", "account-verification", variables);
     }
 
+    @Override
     public void sendPasswordResetEmail(String email, String resetUrl, String username) {
         Map<String, Object> variables = Map.of(
                 "username", username,
@@ -78,5 +81,15 @@ public class MailService {
         );
 
         sendEmail(email, "Redefinição de senha - Genjira", "password-reset", variables);
+    }
+
+    @Override
+    public void sendResendVerificationEmail(String email, String verificationUrl, String username) {
+        Map<String, Object> variables = Map.of(
+                "username", username,
+                "verificationUrl", verificationUrl
+        );
+
+        sendEmail(email, "🚨 Novo link de verificação - Genjira", "account-verification", variables);
     }
 }
