@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -40,55 +42,25 @@ public class UserController {
         }
     }
 
-    @PostMapping("/resend-verification")
-    public ResponseEntity<String> resendVerification(@RequestBody EmailRequest request) {
+    @PutMapping("/{id}")
+    public ResponseEntity<String> editUser(@PathVariable UUID id, @RequestBody UpdateUserRequest request) {
         try {
-            userService.resendVerificationEmail(request.email());
-            return ResponseEntity.ok("Link de verificação reenviado.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            userService.updateUser(id, request);
+            return ResponseEntity.ok("Usuário atualizado com sucesso.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno ao reenviar verificação.");
+                    .body("Erro interno ao atualizar usuário.");
         }
     }
 
-    @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody EmailRequest request) {
-        try {
-            userService.sendResetPasswordEmail(request.email());
-            return ResponseEntity.ok("Instruções de redefinição de senha enviadas.");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro ao processar redefinição de senha.");
-        }
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
-        try {
-            userService.resetPassword(request.token(), request.newPassword());
-            return ResponseEntity.ok("Senha redefinida com sucesso.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro ao redefinir senha.");
-        }
-    }
-
-    @GetMapping("/reset-password/validate")
-    public ResponseEntity<String> validateResetToken(@RequestParam String token) {
-        try {
-            boolean valid = userService.validateResetToken(token);
-            return valid
-                    ? ResponseEntity.ok("Token válido.")
-                    : ResponseEntity.status(HttpStatus.GONE).body("Token expirado ou inválido.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro ao validar token.");
-        }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable UUID id) {
+       try {
+           userService.deleteUserById(id);
+           return ResponseEntity.ok("Usuário deletado com sucesso.");
+       } catch (Exception e) {
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body("Erro interno ao excluir usuário.");
+       }
     }
 }

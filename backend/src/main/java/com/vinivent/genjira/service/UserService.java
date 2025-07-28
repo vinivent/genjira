@@ -1,14 +1,18 @@
 package com.vinivent.genjira.service;
 
 import com.vinivent.genjira.dto.RegisterRequest;
+import com.vinivent.genjira.dto.UpdateUserRequest;
 import com.vinivent.genjira.enums.UserSituation;
 import com.vinivent.genjira.exception.EmailAlreadyUsedException;
+import com.vinivent.genjira.exception.UsernameAlreadyUsedExcpetion;
 import com.vinivent.genjira.model.PasswordResetToken;
 import com.vinivent.genjira.model.User;
 import com.vinivent.genjira.model.UserVerified;
 import com.vinivent.genjira.repository.PasswordResetTokenRepository;
 import com.vinivent.genjira.repository.UserRepository;
 import com.vinivent.genjira.repository.UserVerifiedRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -45,9 +49,14 @@ public class UserService implements UserDetailsService {
                     throw new EmailAlreadyUsedException("Esse e-mail já está em uso.");
                 });
 
+        userRepository.findByUsername(request.username().trim().toLowerCase())
+                .ifPresent(user -> {
+                    throw new UsernameAlreadyUsedExcpetion("Esse nome de usuário já está em uso.");
+                });
+
         User user = new User();
-        user.setUsername(request.username().trim().toLowerCase());
-        user.setEmail(request.email().trim().toLowerCase());
+        user.setUsername(request.username());
+        user.setEmail(request.email());
         user.setName(request.name());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setSituation(UserSituation.PENDING);
@@ -58,6 +67,38 @@ public class UserService implements UserDetailsService {
 
         String url = "https://genjira.com/verify/" + verification.getVerificationToken();
         mailService.sendAccountVerificationEmail(user.getEmail(), url, user.getUsername());
+    }
+
+    public void updateUser(UUID id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + id));
+
+        if (request.username() != null) {
+            user.setUsername(request.username());
+        }
+        if (request.name() != null) {
+            user.setName(request.name());
+        }
+        if (request.userDescription() != null) {
+            user.setUserDescription(request.userDescription());
+        }
+        if (request.avatar() != null) {
+            user.setAvatar(request.avatar());
+        }
+        if (request.password() != null) {
+            user.setPassword(passwordEncoder.encode(request.password()));
+        }
+
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUserById(UUID id) {
+        if (!userRepository.existsById(id)) {
+            throw new EntityNotFoundException("Usuário não encontrado com ID: " + id);
+        }
+
+        userRepository.deleteById(id);
     }
 
     public String verifyUser(String token) {
@@ -143,7 +184,6 @@ public class UserService implements UserDetailsService {
 
         return userVerifiedRepository.save(verification);
     }
-
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
