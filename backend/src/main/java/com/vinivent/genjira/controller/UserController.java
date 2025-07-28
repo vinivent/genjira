@@ -2,7 +2,7 @@ package com.vinivent.genjira.controller;
 
 import com.vinivent.genjira.dto.*;
 import com.vinivent.genjira.model.User;
-import com.vinivent.genjira.service.interfaces.IUserService;
+import com.vinivent.genjira.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/user")
 public class UserController {
 
-    private final IUserService userService;
+    private final UserService userService;
 
-    public UserController(IUserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -37,29 +37,6 @@ public class UserController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        try {
-            userService.registerUser(request);
-            return ResponseEntity.ok("Usuário registrado com sucesso. Verifique seu e-mail.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro ao registrar usuário.");
-        }
-    }
-
-    @GetMapping("/verify")
-    public ResponseEntity<String> verify(@RequestParam("token") String token) {
-        try {
-            String result = userService.verifyUser(token);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro ao verificar usuário.");
         }
     }
 
