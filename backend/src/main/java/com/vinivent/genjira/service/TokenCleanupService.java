@@ -1,7 +1,7 @@
 package com.vinivent.genjira.service;
 
-import com.vinivent.genjira.repository.interfaces.IPasswordResetTokenRepository;
 import com.vinivent.genjira.model.PasswordResetToken;
+import com.vinivent.genjira.repository.PasswordResetTokenRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -11,9 +11,9 @@ import java.util.List;
 @Service
 public class TokenCleanupService {
 
-    private final IPasswordResetTokenRepository resetTokenRepository;
+    private final PasswordResetTokenRepository resetTokenRepository;
 
-    public TokenCleanupService(IPasswordResetTokenRepository resetTokenRepository) {
+    public TokenCleanupService(PasswordResetTokenRepository resetTokenRepository) {
         this.resetTokenRepository = resetTokenRepository;
     }
 
