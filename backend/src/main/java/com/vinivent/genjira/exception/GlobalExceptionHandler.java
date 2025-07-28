@@ -16,9 +16,15 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EmailAlreadyUsedException.class)
-    public ResponseEntity<String> handleEmailAlreadyUsed(EmailAlreadyUsedException ex) {
+    public ResponseEntity<String> handleEmailAlreadyUsed(EmailAlreadyUsedException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ex.getMessage());
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(UsernameAlreadyUsedExcpetion.class)
+    public ResponseEntity<String> handleUsernameAlreadyUsed(UsernameAlreadyUsedExcpetion e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
